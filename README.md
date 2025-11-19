@@ -1,0 +1,2 @@
+# historiaidiotadozorks
+oque foi?
