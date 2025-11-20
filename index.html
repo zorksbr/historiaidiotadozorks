@@ -105,6 +105,15 @@
   .toolbar{display:flex;justify-content:space-between;margin-bottom:6px;}
   .btn{border:1px solid #333;padding:4px 10px;background:#eee;cursor:pointer;}
   .btn.primary{background:#ddd;font-weight:bold;}
+
+  /* Ajustes para zoom da imagem do leitor */
+  .reader-img-zoom {
+    transition: transform 0.2s;
+    max-width: 90vw;
+    max-height: 70vh;
+    display: block;
+    margin: auto;
+  }
 </style>
 </head>
 <body>
@@ -166,12 +175,14 @@
           <button class="btn" id="next-page">Próxima ▶</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn" id="zoom-out">-</button>
+          <button class="btn" id="zoom-in">+</button>
           <div class="small" id="reader-info">Capítulo 1 • Página 1/1</div>
           <button class="btn" id="close-reader">Fechar ✕</button>
         </div>
       </div>
       <div style="display:flex;align-items:center;justify-content:center;padding:6px 12px;overflow:auto">
-        <img id="reader-img" src="" alt="Página" />
+        <img id="reader-img" class="reader-img-zoom" src="" alt="Página" />
       </div>
     </div>
   </div>
@@ -195,6 +206,7 @@ Arte feita por ZorksBR
     const readerImg = document.getElementById('reader-img');
     const readerInfo = document.getElementById('reader-info');
     let currentChapter=null, currentPage=0;
+    let zoomLevel = 1;
 
     function init(){
       totalSpan.textContent = chapters.length;
@@ -211,18 +223,30 @@ Arte feita por ZorksBR
       document.getElementById('next-page').addEventListener('click',()=>turnPage(1));
       document.getElementById('prev-page').addEventListener('click',()=>turnPage(-1));
 
+      // Eventos dos botões de zoom
+      document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoomLevel + 0.2));
+      document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoomLevel - 0.2));
+
       // atalhos de teclado
       window.addEventListener('keydown', (e)=>{
         if(!reader.classList.contains('active')) return;
         if(e.key==='ArrowRight') turnPage(1);
         if(e.key==='ArrowLeft') turnPage(-1);
         if(e.key==='Escape') closeReader();
+        if(e.key==='=') setZoom(zoomLevel + 0.2); // tecla +
+        if(e.key==='-') setZoom(zoomLevel - 0.2); // tecla -
       });
+    }
+
+    function setZoom(level) {
+      zoomLevel = Math.max(0.2, Math.min(level, 5)); // Mínimo 0.2x, máximo 5x
+      readerImg.style.transform = `scale(${zoomLevel})`;
     }
 
     function openChapter(id){
       currentChapter = chapters.find(c=>c.id===id);
       currentPage = 0;
+      setZoom(1); // Resetar zoom ao abrir capítulo
       showPage();
       reader.classList.add('active');
     }
@@ -242,7 +266,11 @@ Arte feita por ZorksBR
       showPage();
     }
 
-    function closeReader(){reader.classList.remove('active');currentChapter=null;currentPage=0;}
+    function closeReader(){
+      reader.classList.remove('active');
+      currentChapter=null;currentPage=0;
+      setZoom(1); // Resetar zoom ao fechar
+    }
 
     // Inicializa listagem
     init();
